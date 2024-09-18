@@ -58,10 +58,35 @@ negar (And t u) = Or (negar t) (negar u)
 negar (Impl v w) = And v (negar w)
 negar (Syss x y) = negar (And (negar (Impl x y)) (negar (Impl y x)))
 
---FALTA LA FUNCION FNC
+-- Funcion fnc que pasa a fnn y delega a Aux
+fnc :: Prop -> Prop
+fnc x =
+    let y = fnn x
+    in fncAux y
+
+-- Funcion auxiliar, si OR entonces delega a distribuir
+fncAux :: Prop -> Prop
+fncAux (Var p) = Var p
+fncAux (And p q) = And (fncAux p) (fncAux q)  
+fncAux (Or p q) = distribuir (Or (fncAux p) (fncAux q))  
+
+-- Funcion distribuidora de OR
+distribuir :: Prop -> Prop
+distribuir (Or p q) 
+    | esLiteral p && esLiteral q = Or p q
+distribuir (Or (And p1 p2) q) = And (Or (fncAux p1) q) (Or (fncAux p2) q)
+distribuir (Or p (And q1 q2)) = And (Or p (fncAux q1)) (Or p (fncAux q2))
+distribuir (Or p q) = Or p q
+
+
+-- Funcion para caso base, si es literal, devuelvo true
+esLiteral :: Prop -> Bool
+esLiteral (Var p) = True
+esLiteral (Not (Var p)) = True
+esLiteral _ = False
+
 
 --AUX de clausulas, caso p v q v r
-
 clausulasAux :: Prop -> Clausula
 clausulasAux (Or p q) = clausulasAux p ++ clausulasAux q
 clausulasAux p = [p]
@@ -99,8 +124,15 @@ resolucion xs ys = noDup (resolucionAux xs ys)
 
 -- Si resolucion es distinto del vacio entonces verdadero, caso contrario, falso
 -- CASO DE QUE TE DEN P V Q , R V S, DEBO CONTEMPLARLO?
+-- CASO YA CONTEMPLADO, PREGUNTAR AL AYUDANTE SOBRE SI ES TRUCULENTO
 hayResolvente :: Clausula -> Clausula -> Bool
-hayResolvente xs ys = not (null (resolucion xs ys))
+hayResolvente xs ys = 
+    let res = resolucion xs ys
+        esVacia = null res
+        mismaLongitud = length res == length xs + length ys
+    in not (esVacia || mismaLongitud)
+
+
 
 
 
