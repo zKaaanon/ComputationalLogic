@@ -67,6 +67,7 @@ fnc x =
 -- Funcion auxiliar, si OR entonces delega a distribuir
 fncAux :: Prop -> Prop
 fncAux (Var p) = Var p
+fncAux (Not (Var p)) = Not (Var p)
 fncAux (And p q) = And (fncAux p) (fncAux q)  
 fncAux (Or p q) = distribuir (Or (fncAux p) (fncAux q))  
 
